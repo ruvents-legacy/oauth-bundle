@@ -11,7 +11,8 @@
     ],
     "require": {
         "php": ">=5.5.9",
-        "symfony/security-guard": "^3.0"
+        "symfony/security-guard": "^3.0",
+        "symfony/options-resolver": "^3.0"
     },
     "autoload": {
         "psr-4": {
