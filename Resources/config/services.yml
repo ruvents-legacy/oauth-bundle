@@ -1,0 +1,12 @@
+services:
+  ruvents_oauth.session_data_storage:
+    class: Ruvents\OAuthBundle\SessionDataStorage
+    arguments:
+      - '@session'
+
+  ruvents_oauth.abstract_authenticator:
+    class: Ruvents\OAuthBundle\AbstractOAuthAuthenticator
+    arguments:
+      - []
+      - '@session'
+      - '@ruvents_oauth.session_data_storage'
