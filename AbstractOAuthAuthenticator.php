@@ -5,7 +5,6 @@ namespace Ruvents\OAuthBundle;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
@@ -17,66 +16,107 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
     use TargetPathTrait;
 
     /**
-     * @var array
-     */
-    protected $options;
-
-    /**
      * @var SessionInterface
      */
     private $session;
 
     /**
-     * @var null|DataStorageInterface
+     * @var OAuthServiceInterface[]
      */
-    private $dataStorage;
+    private $services;
 
     /**
-     * @param array                     $options
-     * @param SessionInterface          $session
-     * @param null|DataStorageInterface $dataStorage
+     * @var OAuthServiceInterface
      */
-    public function __construct(
-        array $options = [],
-        SessionInterface $session,
-        DataStorageInterface $dataStorage = null
-    ) {
-        $resolver = new OptionsResolver();
-        $this->configureOptions($resolver);
-        $this->options = $resolver->resolve($options);
+    private $service;
 
+    /**
+     * @param SessionInterface $session
+     */
+    public function __construct(SessionInterface $session)
+    {
         $this->session = $session;
-        $this->dataStorage = $dataStorage;
     }
 
     /**
-     * @return string
+     * @param OAuthServiceInterface $service
+     *
+     * @throws \RuntimeException
      */
-    abstract public function getRedirectUrl();
+    final public function registerService(OAuthServiceInterface $service)
+    {
+        $name = $service->getName();
+
+        if (isset($this->services[$name])) {
+            throw new \RuntimeException(sprintf(
+                'Service "%s" is already registered in "%s".',
+                $name, get_class($this)
+            ));
+        }
+
+        $this->services[$name] = $service;
+    }
+
+    /**
+     * @param string $serviceName
+     *
+     * @return string
+     *
+     * @throws \RuntimeException
+     */
+    final public function getLoginUrl($serviceName)
+    {
+        if (!isset($this->services[$serviceName])) {
+            throw new \RuntimeException(sprintf(
+                'Service "%s" is not registered in "%s".',
+                $serviceName,
+                get_class($this)
+            ));
+        }
+
+        $redirectUrl = $this->getRedirectUrl($serviceName);
+
+        return $this->services[$serviceName]->getLoginUrl($redirectUrl);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    final public function getCredentials(Request $request)
+    {
+        $name = $this->getServiceName($request);
+
+        if (!isset($this->services[$name])) {
+            return null;
+        }
+
+        $this->service = $this->services[$name];
+
+        return $this->service->getCredentials($request);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    final public function checkCredentials($credentials, UserInterface $user)
+    {
+        return true;
+    }
 
     /**
      * {@inheritdoc}
      */
     final public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        $serviceCredentials = $this->getServiceCredentials($credentials, $this->getRedirectUrl());
+        $redirectUrl = $this->getRedirectUrl($this->service->getName());
 
-        $user = $this->findUserByServiceCredentials($serviceCredentials, $userProvider);
+        $data = $this->service->getData($credentials, $redirectUrl);
+        $data->service = $this->service->getName();
 
-        if (null !== $user) {
-            return $user;
-        }
+        $user = $this->findUser($data, $userProvider);
 
-        $data = $this->getData($serviceCredentials);
-
-        if (null === $data) {
-            return null;
-        }
-
-        $user = $this->findUserByData($data, $userProvider);
-
-        if (null === $user && null !== $this->dataStorage && $this->saveUserDataOnUserNotFound()) {
-            $this->dataStorage->save($data);
+        if (null === $user) {
+            $this->session->set($this->getLastDataSessionKey(), $data);
         }
 
         return $user;
@@ -85,63 +125,46 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
     /**
      * {@inheritdoc}
      */
-    public function checkCredentials($credentials, UserInterface $user)
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        if (null === $targetPath = $this->getTargetPath($this->session, $providerKey)) {
-            return null;
-        }
-
-        return new RedirectResponse($targetPath);
+        return new RedirectResponse($this->getTargetPath($this->session, $providerKey));
     }
 
     /**
-     * @param mixed  $requestCredentials
-     * @param string $redirectUrl
-     *
-     * @return mixed|null
+     * @return OAuthData|null
      */
-    abstract protected function getServiceCredentials($requestCredentials, $redirectUrl);
-
-    /**
-     * @param mixed                 $serviceCredentials
-     * @param UserProviderInterface $userProvider
-     *
-     * @return UserInterface|null
-     */
-    abstract protected function findUserByServiceCredentials($serviceCredentials, UserProviderInterface $userProvider);
-
-    /**
-     * @param mixed $serviceCredentials
-     *
-     * @return DataInterface
-     */
-    abstract protected function getData($serviceCredentials);
-
-    /**
-     * @param DataInterface         $data
-     * @param UserProviderInterface $userProvider
-     *
-     * @return UserInterface|null
-     */
-    abstract protected function findUserByData(DataInterface $data, UserProviderInterface $userProvider);
-
-    /**
-     * @return bool
-     */
-    abstract protected function saveUserDataOnUserNotFound();
-
-    /**
-     * @param OptionsResolver $resolver
-     */
-    protected function configureOptions(OptionsResolver $resolver)
+    final public function getLastData()
     {
+        return $this->session->get($this->getLastDataSessionKey());
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return string
+     */
+    abstract protected function getServiceName(Request $request);
+
+    /**
+     * @param string $serviceName
+     *
+     * @return string
+     */
+    abstract protected function getRedirectUrl($serviceName);
+
+    /**
+     * @param OAuthData             $data
+     * @param UserProviderInterface $userProvider
+     *
+     * @return UserInterface
+     */
+    abstract protected function findUser(OAuthData $data, UserProviderInterface $userProvider);
+
+    /**
+     * @return string
+     */
+    private function getLastDataSessionKey()
+    {
+        return 'ruvents_oauth.'.md5(get_class($this));
     }
 }

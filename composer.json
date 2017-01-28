@@ -11,8 +11,14 @@
     ],
     "require": {
         "php": ">=5.5.9",
+        "symfony/dependency-injection": "^3.0",
+        "symfony/config": "^3.2",
+        "symfony/yaml": "^3.2",
         "symfony/security-guard": "^3.0",
-        "symfony/options-resolver": "^3.0"
+        "symfony/options-resolver": "^3.0",
+        "php-http/message-factory": "^1.0",
+        "php-http/httplug": "^1.1",
+        "php-http/discovery": "^1.1"
     },
     "autoload": {
         "psr-4": {
