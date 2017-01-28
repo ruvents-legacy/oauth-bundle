@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
@@ -40,6 +41,8 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
 
     /**
      * @param OAuthServiceInterface $service
+     *
+     * @return void
      *
      * @throws \RuntimeException
      */
@@ -113,13 +116,13 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
         $data = $this->service->getData($credentials, $redirectUrl);
         $data->service = $this->service->getName();
 
-        $user = $this->findUser($data, $userProvider);
-
-        if (null === $user) {
-            $this->session->set($this->getLastDataSessionKey(), $data);
+        try {
+            return $this->findUser($data, $userProvider);
+        } finally {
+            if (!isset($user)) {
+                $this->session->set($this->getLastDataSessionKey(), $data);
+            }
         }
-
-        return $user;
     }
 
     /**
@@ -136,6 +139,14 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
     final public function getLastData()
     {
         return $this->session->get($this->getLastDataSessionKey());
+    }
+
+    /**
+     * @return void
+     */
+    final public function clearLastData()
+    {
+        $this->session->remove($this->getLastDataSessionKey());
     }
 
     /**
@@ -157,14 +168,16 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
      * @param UserProviderInterface $userProvider
      *
      * @return UserInterface
+     *
+     * @throws UsernameNotFoundException
      */
     abstract protected function findUser(OAuthData $data, UserProviderInterface $userProvider);
 
     /**
      * @return string
      */
-    private function getLastDataSessionKey()
+    protected function getLastDataSessionKey()
     {
-        return 'ruvents_oauth.'.md5(get_class($this));
+        return 'ruvents_oauth.'.sha1(get_class($this));
     }
 }
