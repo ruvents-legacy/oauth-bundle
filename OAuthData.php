@@ -28,4 +28,9 @@ class OAuthData
      * @var string
      */
     public $lastName;
+
+    /**
+     * @var array
+     */
+    public $extra = [];
 }
