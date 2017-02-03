@@ -115,7 +115,7 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
             return $this->findUser($data, $userProvider);
         } finally {
             if (!isset($user)) {
-                $this->dataStorage->save($data);
+                $this->dataStorage->setData($data);
             }
         }
     }

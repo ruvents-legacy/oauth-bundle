@@ -27,7 +27,7 @@ class SessionDataStorage implements DataStorageInterface
     /**
      * {@inheritdoc}
      */
-    public function save(OAuthData $data)
+    public function setData(OAuthData $data)
     {
         if (!$this->session->isStarted()) {
             $this->session->start();
@@ -39,7 +39,7 @@ class SessionDataStorage implements DataStorageInterface
     /**
      * {@inheritdoc}
      */
-    public function has()
+    public function hasData()
     {
         if (!$this->session->isStarted()) {
             $this->session->start();
@@ -51,13 +51,13 @@ class SessionDataStorage implements DataStorageInterface
     /**
      * {@inheritdoc}
      */
-    public function get()
+    public function getData()
     {
         if (!$this->session->isStarted()) {
             $this->session->start();
         }
 
-        if (!$this->has()) {
+        if (!$this->hasData()) {
             throw new \RuntimeException(sprintf('OAuth data for the key "%s" was not found.', $this->key));
         }
 
@@ -67,7 +67,7 @@ class SessionDataStorage implements DataStorageInterface
     /**
      * {@inheritdoc}
      */
-    public function clear()
+    public function removeData()
     {
         if (!$this->session->isStarted()) {
             $this->session->start();

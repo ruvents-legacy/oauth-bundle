@@ -7,17 +7,17 @@ interface DataStorageInterface
     /**
      * @param OAuthData $data
      */
-    public function save(OAuthData $data);
+    public function setData(OAuthData $data);
 
     /**
      * @return bool
      */
-    public function has();
+    public function hasData();
 
     /**
      * @return OAuthData
      */
-    public function get();
+    public function getData();
 
-    public function clear();
+    public function removeData();
 }
