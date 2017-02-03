@@ -2,24 +2,18 @@
 
 namespace Ruvents\OAuthBundle;
 
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
-abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
+abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator implements OAuthManagerInterface
 {
-    use TargetPathTrait;
-
     /**
-     * @var SessionInterface
+     * @var DataStorageInterface
      */
-    private $session;
+    private $dataStorage;
 
     /**
      * @var OAuthServiceInterface[]
@@ -29,57 +23,58 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
     /**
      * @var OAuthServiceInterface
      */
-    private $service;
+    private $currentService;
 
     /**
-     * @param SessionInterface $session
+     * @param DataStorageInterface $dataStorage
      */
-    public function __construct(SessionInterface $session)
+    public function __construct(DataStorageInterface $dataStorage)
     {
-        $this->session = $session;
+        $this->dataStorage = $dataStorage;
     }
 
     /**
-     * @param OAuthServiceInterface $service
-     *
-     * @return void
+     * {@inheritdoc}
      *
      * @throws \RuntimeException
      */
-    final public function registerService(OAuthServiceInterface $service)
+    public function registerService(OAuthServiceInterface $service)
     {
         $name = $service->getName();
 
         if (isset($this->services[$name])) {
-            throw new \RuntimeException(sprintf(
-                'Service "%s" is already registered in "%s".',
-                $name, get_class($this)
-            ));
+            throw new \RuntimeException(
+                sprintf('Service "%s" is already registered in "%s".', $name, get_class($this))
+            );
         }
 
         $this->services[$name] = $service;
     }
 
     /**
-     * @param string $serviceName
-     *
-     * @return string
+     * {@inheritdoc}
      *
      * @throws \RuntimeException
      */
-    final public function getLoginUrl($serviceName)
+    public function getLoginUrl($serviceName)
     {
         if (!isset($this->services[$serviceName])) {
-            throw new \RuntimeException(sprintf(
-                'Service "%s" is not registered in "%s".',
-                $serviceName,
-                get_class($this)
-            ));
+            throw new \RuntimeException(
+                sprintf('Service "%s" is not registered in "%s".', $serviceName, get_class($this))
+            );
         }
 
         $redirectUrl = $this->getRedirectUrl($serviceName);
 
         return $this->services[$serviceName]->getLoginUrl($redirectUrl);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDataStorage()
+    {
+        return $this->dataStorage;
     }
 
     /**
@@ -93,9 +88,9 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
             return null;
         }
 
-        $this->service = $this->services[$name];
+        $this->currentService = $this->services[$name];
 
-        return $this->service->getCredentials($request);
+        return $this->currentService->getCredentials($request);
     }
 
     /**
@@ -111,42 +106,18 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
      */
     final public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        $redirectUrl = $this->getRedirectUrl($this->service->getName());
+        $redirectUrl = $this->getRedirectUrl($this->currentService->getName());
 
-        $data = $this->service->getData($credentials, $redirectUrl);
-        $data->service = $this->service->getName();
+        $data = $this->currentService->getData($credentials, $redirectUrl);
+        $data->service = $this->currentService->getName();
 
         try {
             return $this->findUser($data, $userProvider);
         } finally {
             if (!isset($user)) {
-                $this->session->set($this->getLastDataSessionKey(), $data);
+                $this->dataStorage->save($data);
             }
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
-    {
-        return new RedirectResponse($this->getTargetPath($this->session, $providerKey));
-    }
-
-    /**
-     * @return OAuthData|null
-     */
-    final public function getLastData()
-    {
-        return $this->session->get($this->getLastDataSessionKey());
-    }
-
-    /**
-     * @return void
-     */
-    final public function clearLastData()
-    {
-        $this->session->remove($this->getLastDataSessionKey());
     }
 
     /**
@@ -157,13 +128,6 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
     abstract protected function getServiceName(Request $request);
 
     /**
-     * @param string $serviceName
-     *
-     * @return string
-     */
-    abstract protected function getRedirectUrl($serviceName);
-
-    /**
      * @param OAuthData             $data
      * @param UserProviderInterface $userProvider
      *
@@ -172,12 +136,4 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator
      * @throws UsernameNotFoundException
      */
     abstract protected function findUser(OAuthData $data, UserProviderInterface $userProvider);
-
-    /**
-     * @return string
-     */
-    protected function getLastDataSessionKey()
-    {
-        return 'ruvents_oauth.'.sha1(get_class($this));
-    }
 }
