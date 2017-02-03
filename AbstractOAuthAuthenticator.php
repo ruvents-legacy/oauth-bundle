@@ -11,7 +11,7 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator implements OAuthManagerInterface
 {
     /**
-     * @var DataStorageInterface
+     * @var DataStorageInterface|null
      */
     private $dataStorage;
 
@@ -31,10 +31,10 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
     private $currentService;
 
     /**
-     * @param DataStorageInterface       $dataStorage
+     * @param DataStorageInterface|null  $dataStorage
      * @param StateManagerInterface|null $stateManager
      */
-    public function __construct(DataStorageInterface $dataStorage, StateManagerInterface $stateManager = null)
+    public function __construct(DataStorageInterface $dataStorage = null, StateManagerInterface $stateManager = null)
     {
         $this->dataStorage = $dataStorage;
         $this->stateManager = $stateManager;
@@ -112,14 +112,6 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
     /**
      * {@inheritdoc}
      */
-    final public function checkCredentials($credentials, UserInterface $user)
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     final public function getUser($credentials, UserProviderInterface $userProvider)
     {
         $redirectUrl = $this->getRedirectUrl($this->currentService->getName());
@@ -130,10 +122,18 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
         try {
             return $this->findUser($data, $userProvider);
         } finally {
-            if (!isset($user)) {
+            if (null !== $this->dataStorage) {
                 $this->dataStorage->setData($data);
             }
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    final public function checkCredentials($credentials, UserInterface $user)
+    {
+        return true;
     }
 
     /**

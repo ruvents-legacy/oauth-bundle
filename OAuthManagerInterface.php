@@ -10,7 +10,7 @@ interface OAuthManagerInterface
     public function registerService(OAuthServiceInterface $service);
 
     /**
-     * @return DataStorageInterface
+     * @return DataStorageInterface|null
      */
     public function getDataStorage();
 
