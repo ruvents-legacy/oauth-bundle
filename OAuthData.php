@@ -5,6 +5,16 @@ namespace Ruvents\OAuthBundle;
 class OAuthData
 {
     /**
+     * @var string
+     */
+    public $accessToken;
+
+    /**
+     * @var string
+     */
+    public $refreshToken;
+
+    /**
      * @var int|string
      */
     public $id;
