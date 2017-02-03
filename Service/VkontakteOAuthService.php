@@ -52,7 +52,7 @@ class VkontakteOAuthService extends AbstractOAuthService
      */
     public function getData($code, $redirectUrl)
     {
-        $responseData = $this->makeRequestAndJsonDecode('oauth.vk.com', 'access_token', [
+        $rawData = $this->makeRequestAndJsonDecode('oauth.vk.com', 'access_token', [
             'client_id' => $this->options['id'],
             'client_secret' => $this->options['secret'],
             'redirect_uri' => $redirectUrl,
@@ -62,27 +62,16 @@ class VkontakteOAuthService extends AbstractOAuthService
         ]);
 
         $data = new OAuthData();
-        $data->id = $responseData['user_id'];
-        $data->email = $responseData['email'];
+        $data->id = $rawData['user_id'];
+        $data->email = $rawData['email'];
 
-        /*$uri = (new Diactoros\Uri())
-            ->withScheme('https')
-            ->withHost('api.vk.com')
-            ->withPath('method/users.get')
-            ->withQuery(http_build_query([
-                'user_ids' => $serviceCredentials['user_id'],
-                'v' => self::API_VERSION,
-            ]));
+        $rawData = $this->makeRequestAndJsonDecode('api.vk.com', 'method/users.get', [
+            'user_ids' => $data->id,
+            'v' => $this->options['version'],
+        ])['response'][0];
 
-        $response = $this->httpClient->sendRequest(new Diactoros\Request($uri, 'GET'));
-        $responseData = json_decode($response->getBody()->getContents(), true)['response'][0];
-
-         $socialData = new SocialData();
-         $socialData->socialService = $this->getName();
-         $socialData->socialId = (int)$accessTokenData['user_id'];
-         $socialData->userEmail = isset($accessTokenData['email']) ? $accessTokenData['email'] : null;
-         $socialData->userFirstname = isset($userData['first_name']) ? $userData['first_name'] : null;
-         $socialData->userLastname = isset($userData['last_name']) ? $userData['last_name'] : null;*/
+        $data->firstName = isset($rawData['first_name']) ? $rawData['first_name'] : null;
+        $data->lastName = isset($rawData['last_name']) ? $rawData['last_name'] : null;
 
         return $data;
     }
@@ -102,6 +91,6 @@ class VkontakteOAuthService extends AbstractOAuthService
             ])
             ->setAllowedTypes('id', 'int')
             ->setAllowedTypes('secret', 'string')
-            ->setAllowedTypes('version', 'float');
+            ->setAllowedTypes('version', 'numeric');
     }
 }

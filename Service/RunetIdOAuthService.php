@@ -52,7 +52,7 @@ class RunetIdOAuthService extends AbstractOAuthService
             'ApiKey' => $this->options['key'],
             'Hash' => md5($this->options['key'].$this->options['secret']),
             'token' => $token,
-        ], [], 'GET', 'http');
+        ], [], [], 'GET', 'http');
 
         $data = new OAuthData();
         $data->id = $rawData['RunetId'];

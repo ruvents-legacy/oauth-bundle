@@ -50,7 +50,7 @@ class OdnoklassnikiOAuthService extends AbstractOAuthService
      */
     public function getData($code, $redirectUrl)
     {
-        $rawData = $this->makeRequestAndJsonDecode('api.ok.ru', 'oauth/token.do', [
+        $rawData = $this->makeRequestAndJsonDecode('api.ok.ru', 'oauth/token.do', [], [
             'client_id' => $this->options['id'],
             'client_secret' => $this->options['secret'],
             'redirect_uri' => $redirectUrl,

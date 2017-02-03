@@ -32,7 +32,7 @@ class FacebookOAuthService extends AbstractOAuthService
                 'client_id' => $this->options['id'],
                 'response_type' => 'code',
                 'redirect_uri' => $redirectUrl,
-                'scope' => 'email,public_profile',
+                'scope' => implode(',', $this->options['scope']),
             ]))
             ->__toString();
     }
@@ -63,7 +63,7 @@ class FacebookOAuthService extends AbstractOAuthService
         $rawData = $this->makeRequestAndJsonDecode('graph.facebook.com',
             $this->getPath('me'),
             [
-                'fields' => 'email,first_name,last_name,middle_name',
+                'fields' => implode(',', $this->options['fields']),
                 'access_token' => $accessToken,
                 'code' => $code,
                 'locale' => 'ru_RU',
@@ -90,11 +90,23 @@ class FacebookOAuthService extends AbstractOAuthService
                 'secret',
             ])
             ->setDefaults([
+                'scope' => [
+                    'email',
+                    'public_profile',
+                ],
+                'fields' => [
+                    'email',
+                    'first_name',
+                    'last_name',
+                    'middle_name',
+                ],
                 'graph_version' => 2.8,
             ])
             ->setAllowedTypes('id', 'int')
             ->setAllowedTypes('secret', 'string')
-            ->setAllowedTypes('graph_version', 'float');
+            ->setAllowedTypes('scope', 'array')
+            ->setAllowedTypes('graph_version', 'numeric')
+            ->setAllowedTypes('fields', 'array');
     }
 
     /**

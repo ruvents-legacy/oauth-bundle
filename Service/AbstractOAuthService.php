@@ -67,6 +67,7 @@ abstract class AbstractOAuthService implements OAuthServiceInterface
      * @param string $path
      * @param array  $query
      * @param array  $post
+     * @param array  $headers
      * @param string $method
      * @param string $scheme
      *
@@ -77,10 +78,11 @@ abstract class AbstractOAuthService implements OAuthServiceInterface
         $path,
         array $query = [],
         array $post = [],
+        array $headers = [],
         $method = 'GET',
         $scheme = 'https'
     ) {
-        $response = $this->makeRequest($host, $path, $query, $post, $method, $scheme);
+        $response = $this->makeRequest($host, $path, $query, $post, $headers, $method, $scheme);
 
         return json_decode($response->getBody()->getContents(), true);
     }
@@ -90,6 +92,7 @@ abstract class AbstractOAuthService implements OAuthServiceInterface
      * @param string $path
      * @param array  $query
      * @param array  $post
+     * @param array  $headers
      * @param string $method
      * @param string $scheme
      *
@@ -100,6 +103,7 @@ abstract class AbstractOAuthService implements OAuthServiceInterface
         $path,
         array $query = [],
         array $post = [],
+        array $headers = [],
         $method = 'GET',
         $scheme = 'https'
     ) {
@@ -108,9 +112,16 @@ abstract class AbstractOAuthService implements OAuthServiceInterface
             ->withScheme($scheme)
             ->withHost($host)
             ->withPath($path)
-            ->withQuery(http_build_query($query));
+            ->withQuery(http_build_query($query, '', '&'));
 
-        $request = $this->messageFactory->createRequest($method, $uri);
+        $body = null;
+
+        if ('post' === strtolower($method)) {
+            $body = http_build_query($post, '', '&');
+            $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        }
+
+        $request = $this->messageFactory->createRequest($method, $uri, $headers, $body);
 
         return $this->httpClient->sendRequest($request);
     }
