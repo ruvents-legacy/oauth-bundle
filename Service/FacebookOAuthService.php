@@ -50,7 +50,7 @@ class FacebookOAuthService extends AbstractOAuthService
      */
     public function getData($code, $redirectUrl)
     {
-        $accessToken = $this->makeRequestAndJsonDecode('graph.facebook.com',
+        $rawData = $this->makeRequestAndJsonDecode('graph.facebook.com',
             $this->getPath('oauth/access_token'),
             [
                 'client_id' => $this->options['id'],
@@ -58,23 +58,26 @@ class FacebookOAuthService extends AbstractOAuthService
                 'redirect_uri' => $redirectUrl,
                 'code' => $code,
             ]
-        )['access_token'];
+        );
+
+        $data = new OAuthData();
+        $data->accessToken = $rawData['access_token'];
 
         $rawData = $this->makeRequestAndJsonDecode('graph.facebook.com',
             $this->getPath('me'),
             [
                 'fields' => implode(',', $this->options['fields']),
-                'access_token' => $accessToken,
+                'access_token' => $data->accessToken,
                 'code' => $code,
                 'locale' => 'ru_RU',
             ]
         );
 
-        $data = new OAuthData();
-        $data->id = (int)$rawData['id'];
-        $data->email = $rawData['email'] ?? null;
-        $data->firstName = $rawData['first_name'] ?? null;
-        $data->lastName = $rawData['last_name'] ?? null;
+        $data->id = isset($rawData['id']) ? $rawData['id'] : null;
+        $data->email = isset($rawData['email']) ? $rawData['email'] : null;
+        $data->firstName = isset($rawData['first_name']) ? $rawData['first_name'] : null;
+        $data->lastName = isset($rawData['last_name']) ? $rawData['last_name'] : null;
+        $data->middleName = isset($rawData['middle_name']) ? $rawData['middle_name'] : null;
 
         return $data;
     }
@@ -105,7 +108,7 @@ class FacebookOAuthService extends AbstractOAuthService
             ->setAllowedTypes('id', 'int')
             ->setAllowedTypes('secret', 'string')
             ->setAllowedTypes('scope', 'array')
-            ->setAllowedTypes('graph_version', 'numeric')
+            ->setAllowedTypes('graph_version', 'float')
             ->setAllowedTypes('fields', 'array');
     }
 

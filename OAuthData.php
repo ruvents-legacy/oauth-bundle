@@ -37,6 +37,11 @@ class OAuthData
     /**
      * @var string
      */
+    public $middleName;
+
+    /**
+     * @var string
+     */
     public $lastName;
 
     /**

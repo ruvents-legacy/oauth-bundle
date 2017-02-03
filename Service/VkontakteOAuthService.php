@@ -32,7 +32,7 @@ class VkontakteOAuthService extends AbstractOAuthService
                 'client_id' => $this->options['id'],
                 'redirect_uri' => $redirectUrl,
                 'display' => 'page',
-                'scope' => 4194304,
+                'scope' => $this->options['scope'],
                 'response_type' => 'code',
                 'v' => $this->options['version'],
             ]))
@@ -63,7 +63,7 @@ class VkontakteOAuthService extends AbstractOAuthService
 
         $data = new OAuthData();
         $data->id = $rawData['user_id'];
-        $data->email = $rawData['email'];
+        $data->email = isset($rawData['email']) ? $rawData['email'] : null;
 
         $rawData = $this->makeRequestAndJsonDecode('api.vk.com', 'method/users.get', [
             'user_ids' => $data->id,
@@ -88,9 +88,11 @@ class VkontakteOAuthService extends AbstractOAuthService
             ])
             ->setDefaults([
                 'version' => 5.6,
+                'scope' => 4194304,
             ])
             ->setAllowedTypes('id', 'int')
             ->setAllowedTypes('secret', 'string')
-            ->setAllowedTypes('version', 'numeric');
+            ->setAllowedTypes('version', 'float')
+            ->setAllowedTypes('scope', 'int');
     }
 }

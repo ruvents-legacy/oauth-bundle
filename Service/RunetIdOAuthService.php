@@ -55,8 +55,11 @@ class RunetIdOAuthService extends AbstractOAuthService
         ], [], [], 'GET', 'http');
 
         $data = new OAuthData();
-        $data->id = $rawData['RunetId'];
-        $data->email = $rawData['Email'];
+        $data->id = isset($rawData['RunetId']) ? $rawData['RunetId'] : null;
+        $data->email = isset($rawData['Email']) ? $rawData['Email'] : null;
+        $data->firstName = isset($rawData['FirstName']) ? $rawData['FirstName'] : null;
+        $data->lastName = isset($rawData['LastName']) ? $rawData['LastName'] : null;
+        $data->middleName = isset($rawData['MiddleName']) ? $rawData['MiddleName'] : null;
 
         return $data;
     }
