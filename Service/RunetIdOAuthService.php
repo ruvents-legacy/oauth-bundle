@@ -21,7 +21,7 @@ class RunetIdOAuthService extends AbstractOAuthService
     /**
      * {@inheritdoc}
      */
-    public function getLoginUrl($redirectUrl)
+    public function getLoginUrl($redirectUrl, $state = null)
     {
         return $this->uriFactory
             ->createUri('')
@@ -76,5 +76,13 @@ class RunetIdOAuthService extends AbstractOAuthService
             ])
             ->setAllowedTypes('key', 'string')
             ->setAllowedTypes('secret', 'string');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function supportsState()
+    {
+        return false;
     }
 }

@@ -21,7 +21,7 @@ class FacebookOAuthService extends AbstractOAuthService
     /**
      * {@inheritdoc}
      */
-    public function getLoginUrl($redirectUrl)
+    public function getLoginUrl($redirectUrl, $state = null)
     {
         return $this->uriFactory
             ->createUri('')
@@ -33,6 +33,7 @@ class FacebookOAuthService extends AbstractOAuthService
                 'response_type' => 'code',
                 'redirect_uri' => $redirectUrl,
                 'scope' => implode(',', $this->options['scope']),
+                'state' => $state,
             ]))
             ->__toString();
     }

@@ -10,6 +10,7 @@ use Http\Message\MessageFactory;
 use Http\Message\UriFactory;
 use Psr\Http\Message\ResponseInterface;
 use Ruvents\OAuthBundle\OAuthServiceInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractOAuthService implements OAuthServiceInterface
@@ -60,6 +61,22 @@ abstract class AbstractOAuthService implements OAuthServiceInterface
      */
     protected function configureOptions(OptionsResolver $resolver)
     {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getState(Request $request)
+    {
+        return $request->query->get('state');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function supportsState()
+    {
+        return true;
     }
 
     /**

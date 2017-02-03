@@ -21,7 +21,7 @@ class VkontakteOAuthService extends AbstractOAuthService
     /**
      * {@inheritdoc}
      */
-    public function getLoginUrl($redirectUrl)
+    public function getLoginUrl($redirectUrl, $state = null)
     {
         return $this->uriFactory
             ->createUri('')
@@ -34,6 +34,7 @@ class VkontakteOAuthService extends AbstractOAuthService
                 'display' => 'page',
                 'scope' => $this->options['scope'],
                 'response_type' => 'code',
+                'state' => $state,
                 'v' => $this->options['version'],
             ]))
             ->__toString();

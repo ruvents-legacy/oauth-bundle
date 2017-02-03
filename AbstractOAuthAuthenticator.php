@@ -16,6 +16,11 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
     private $dataStorage;
 
     /**
+     * @var StateManagerInterface|null
+     */
+    private $stateManager;
+
+    /**
      * @var OAuthServiceInterface[]
      */
     private $services;
@@ -26,11 +31,13 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
     private $currentService;
 
     /**
-     * @param DataStorageInterface $dataStorage
+     * @param DataStorageInterface       $dataStorage
+     * @param StateManagerInterface|null $stateManager
      */
-    public function __construct(DataStorageInterface $dataStorage)
+    public function __construct(DataStorageInterface $dataStorage, StateManagerInterface $stateManager = null)
     {
         $this->dataStorage = $dataStorage;
+        $this->stateManager = $stateManager;
     }
 
     /**
@@ -65,8 +72,9 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
         }
 
         $redirectUrl = $this->getRedirectUrl($serviceName);
+        $state = $this->stateManager ? $this->stateManager->getState() : null;
 
-        return $this->services[$serviceName]->getLoginUrl($redirectUrl);
+        return $this->services[$serviceName]->getLoginUrl($redirectUrl, $state);
     }
 
     /**
@@ -89,6 +97,14 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
         }
 
         $this->currentService = $this->services[$name];
+
+        if ($this->stateManager && $this->currentService->supportsState()) {
+            $state = $this->currentService->getState($request);
+
+            if (!$this->stateManager->isStateValid($state)) {
+                return null;
+            }
+        }
 
         return $this->currentService->getCredentials($request);
     }

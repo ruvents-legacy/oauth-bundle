@@ -21,7 +21,7 @@ class OdnoklassnikiOAuthService extends AbstractOAuthService
     /**
      * {@inheritdoc}
      */
-    public function getLoginUrl($redirectUrl)
+    public function getLoginUrl($redirectUrl, $state = null)
     {
         return $this->uriFactory
             ->createUri('')
@@ -33,6 +33,7 @@ class OdnoklassnikiOAuthService extends AbstractOAuthService
                 'redirect_uri' => $redirectUrl,
                 'scope' => implode(';', $this->options['scope']),
                 'response_type' => 'code',
+                'state' => $state,
             ]))
             ->__toString();
     }

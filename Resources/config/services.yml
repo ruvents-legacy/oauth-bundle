@@ -4,7 +4,13 @@ services:
     arguments:
       - '@session'
 
+  ruvents_oauth.session_state_manager:
+    class: Ruvents\OAuthBundle\SessionStateManager
+    arguments:
+      - '@session'
+
   ruvents_oauth.abstract_authenticator:
     class: Ruvents\OAuthBundle\AbstractOAuthAuthenticator
     arguments:
       - '@ruvents_oauth.session_data_storage'
+      - '@ruvents_oauth.session_state_manager'
