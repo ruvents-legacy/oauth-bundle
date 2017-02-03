@@ -52,22 +52,14 @@ class VkontakteOAuthService extends AbstractOAuthService
      */
     public function getData($code, $redirectUrl)
     {
-        $uri = $this->uriFactory
-            ->createUri('')
-            ->withScheme('https')
-            ->withHost('oauth.vk.com')
-            ->withPath('access_token')
-            ->withQuery(http_build_query([
-                'client_id' => $this->options['id'],
-                'client_secret' => $this->options['secret'],
-                'redirect_uri' => $redirectUrl,
-                'code' => $code,
-                'lang' => 'ru',
-                'v' => $this->options['version'],
-            ]));
-        $request = $this->messageFactory->createRequest('GET', $uri);
-        $response = $this->httpClient->sendRequest($request);
-        $responseData = json_decode($response->getBody()->getContents(), true);
+        $responseData = $this->makeRequestAndJsonDecode('oauth.vk.com', 'access_token', [
+            'client_id' => $this->options['id'],
+            'client_secret' => $this->options['secret'],
+            'redirect_uri' => $redirectUrl,
+            'code' => $code,
+            'lang' => 'ru',
+            'v' => $this->options['version'],
+        ]);
 
         $data = new OAuthData();
         $data->id = $responseData['user_id'];
@@ -101,12 +93,15 @@ class VkontakteOAuthService extends AbstractOAuthService
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver
-            ->setDefaults([
-                'version' => 5.6,
-            ])
             ->setRequired([
                 'id',
                 'secret',
-            ]);
+            ])
+            ->setDefaults([
+                'version' => 5.6,
+            ])
+            ->setAllowedTypes('id', 'int')
+            ->setAllowedTypes('secret', 'string')
+            ->setAllowedTypes('version', 'float');
     }
 }

@@ -48,23 +48,15 @@ class RunetIdOAuthService extends AbstractOAuthService
      */
     public function getData($token, $redirectUrl)
     {
-        $uri = $this->uriFactory
-            ->createUri('')
-            ->withScheme('http')
-            ->withHost('api.runet-id.com')
-            ->withPath('user/auth')
-            ->withQuery(http_build_query([
-                'ApiKey' => $this->options['key'],
-                'Hash' => md5($this->options['key'].$this->options['secret']),
-                'token' => $token,
-            ]));
-        $request = $this->messageFactory->createRequest('GET', $uri);
-        $response = $this->httpClient->sendRequest($request);
-        $responseData = json_decode($response->getBody()->getContents(), true);
+        $rawData = $this->makeRequestAndJsonDecode('api.runet-id.com', 'user/auth', [
+            'ApiKey' => $this->options['key'],
+            'Hash' => md5($this->options['key'].$this->options['secret']),
+            'token' => $token,
+        ], [], 'GET', 'http');
 
         $data = new OAuthData();
-        $data->id = $responseData['RunetId'];
-        $data->email = $responseData['Email'];
+        $data->id = $rawData['RunetId'];
+        $data->email = $rawData['Email'];
 
         return $data;
     }
@@ -78,6 +70,8 @@ class RunetIdOAuthService extends AbstractOAuthService
             ->setRequired([
                 'key',
                 'secret',
-            ]);
+            ])
+            ->setAllowedTypes('key', 'string')
+            ->setAllowedTypes('secret', 'string');
     }
 }
