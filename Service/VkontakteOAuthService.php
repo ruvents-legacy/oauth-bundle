@@ -96,4 +96,12 @@ class VkontakteOAuthService extends AbstractOAuthService
             ->setAllowedTypes('version', 'float')
             ->setAllowedTypes('scope', 'int');
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function supportsState()
+    {
+        return true;
+    }
 }

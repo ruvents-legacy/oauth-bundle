@@ -57,13 +57,6 @@ abstract class AbstractOAuthService implements OAuthServiceInterface
     }
 
     /**
-     * @param OptionsResolver $resolver
-     */
-    protected function configureOptions(OptionsResolver $resolver)
-    {
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function getState(Request $request)
@@ -76,7 +69,14 @@ abstract class AbstractOAuthService implements OAuthServiceInterface
      */
     public function supportsState()
     {
-        return true;
+        return false;
+    }
+
+    /**
+     * @param OptionsResolver $resolver
+     */
+    protected function configureOptions(OptionsResolver $resolver)
+    {
     }
 
     /**

@@ -18,6 +18,10 @@ class SessionDataStorage implements DataStorageInterface
      */
     private $key;
 
+    /**
+     * @param SessionInterface $session
+     * @param string           $key
+     */
     public function __construct(SessionInterface $session, $key = self::DEFAULT_KEY)
     {
         $this->session = $session;

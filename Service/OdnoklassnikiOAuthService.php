@@ -113,6 +113,14 @@ class OdnoklassnikiOAuthService extends AbstractOAuthService
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function supportsState()
+    {
+        return true;
+    }
+
+    /**
      * @param array  $parameters
      * @param string $accessToken
      *

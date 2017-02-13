@@ -114,6 +114,14 @@ class FacebookOAuthService extends AbstractOAuthService
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function supportsState()
+    {
+        return true;
+    }
+
+    /**
      * @param string $endpoint
      *
      * @return string
