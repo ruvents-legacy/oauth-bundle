@@ -105,7 +105,7 @@ class OdnoklassnikiOAuthService extends AbstractOAuthService
                     'first_name',
                 ],
             ])
-            ->setAllowedTypes('id', 'int')
+            ->setAllowedTypes('id', 'numeric')
             ->setAllowedTypes('public_key', 'string')
             ->setAllowedTypes('secret', 'string')
             ->setAllowedTypes('scope', 'array')

@@ -91,10 +91,10 @@ class VkontakteOAuthService extends AbstractOAuthService
                 'version' => 5.6,
                 'scope' => 4194304,
             ])
-            ->setAllowedTypes('id', 'int')
+            ->setAllowedTypes('id', 'numeric')
             ->setAllowedTypes('secret', 'string')
-            ->setAllowedTypes('version', 'float')
-            ->setAllowedTypes('scope', 'int');
+            ->setAllowedTypes('version', 'numeric')
+            ->setAllowedTypes('scope', 'numeric');
     }
 
     /**

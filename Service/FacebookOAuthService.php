@@ -106,10 +106,10 @@ class FacebookOAuthService extends AbstractOAuthService
                 ],
                 'graph_version' => 2.8,
             ])
-            ->setAllowedTypes('id', 'int')
+            ->setAllowedTypes('id', 'numeric')
             ->setAllowedTypes('secret', 'string')
             ->setAllowedTypes('scope', 'array')
-            ->setAllowedTypes('graph_version', 'float')
+            ->setAllowedTypes('graph_version', 'numeric')
             ->setAllowedTypes('fields', 'array');
     }
 
