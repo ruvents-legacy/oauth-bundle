@@ -88,7 +88,7 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
     /**
      * {@inheritdoc}
      */
-    final public function getCredentials(Request $request)
+    public function getCredentials(Request $request)
     {
         $name = $this->getServiceName($request);
 
@@ -112,7 +112,7 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
     /**
      * {@inheritdoc}
      */
-    final public function getUser($credentials, UserProviderInterface $userProvider)
+    public function getUser($credentials, UserProviderInterface $userProvider)
     {
         $redirectUrl = $this->getRedirectUrl($this->currentService->getName());
 
@@ -131,7 +131,7 @@ abstract class AbstractOAuthAuthenticator extends AbstractGuardAuthenticator imp
     /**
      * {@inheritdoc}
      */
-    final public function checkCredentials($credentials, UserInterface $user)
+    public function checkCredentials($credentials, UserInterface $user)
     {
         return true;
     }
