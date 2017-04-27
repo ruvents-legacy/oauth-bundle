@@ -27,7 +27,7 @@ class VkontakteOAuthService extends AbstractOAuthService
             ->createUri('')
             ->withScheme('https')
             ->withHost('oauth.vk.com')
-            ->withPath('authorize')
+            ->withPath('/authorize')
             ->withQuery(http_build_query([
                 'client_id' => $this->options['id'],
                 'redirect_uri' => $redirectUrl,
@@ -53,7 +53,7 @@ class VkontakteOAuthService extends AbstractOAuthService
      */
     public function getData($code, $redirectUrl)
     {
-        $rawData = $this->makeRequestAndJsonDecode('oauth.vk.com', 'access_token', [
+        $rawData = $this->makeRequestAndJsonDecode('oauth.vk.com', '/access_token', [
             'client_id' => $this->options['id'],
             'client_secret' => $this->options['secret'],
             'redirect_uri' => $redirectUrl,
@@ -66,7 +66,7 @@ class VkontakteOAuthService extends AbstractOAuthService
         $data->id = $rawData['user_id'];
         $data->email = isset($rawData['email']) ? $rawData['email'] : null;
 
-        $rawData = $this->makeRequestAndJsonDecode('api.vk.com', 'method/users.get', [
+        $rawData = $this->makeRequestAndJsonDecode('api.vk.com', '/method/users.get', [
             'user_ids' => $data->id,
             'v' => $this->options['version'],
         ])['response'][0];

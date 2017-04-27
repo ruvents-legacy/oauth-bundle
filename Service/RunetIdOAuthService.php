@@ -27,7 +27,7 @@ class RunetIdOAuthService extends AbstractOAuthService
             ->createUri('')
             ->withScheme('https')
             ->withHost('runet-id.com')
-            ->withPath('oauth/main/dialog')
+            ->withPath('/oauth/main/dialog')
             ->withQuery(http_build_query([
                 'apikey' => $this->options['key'],
                 'url' => $redirectUrl,
@@ -48,7 +48,7 @@ class RunetIdOAuthService extends AbstractOAuthService
      */
     public function getData($token, $redirectUrl)
     {
-        $rawData = $this->makeRequestAndJsonDecode('api.runet-id.com', 'user/auth', [
+        $rawData = $this->makeRequestAndJsonDecode('api.runet-id.com', '/user/auth', [
             'ApiKey' => $this->options['key'],
             'Hash' => md5($this->options['key'].$this->options['secret']),
             'token' => $token,

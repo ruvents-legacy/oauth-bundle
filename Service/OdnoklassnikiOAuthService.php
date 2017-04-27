@@ -27,7 +27,7 @@ class OdnoklassnikiOAuthService extends AbstractOAuthService
             ->createUri('')
             ->withScheme('https')
             ->withHost('connect.ok.ru')
-            ->withPath('oauth/authorize')
+            ->withPath('/oauth/authorize')
             ->withQuery(http_build_query([
                 'client_id' => $this->options['id'],
                 'redirect_uri' => $redirectUrl,
@@ -51,7 +51,7 @@ class OdnoklassnikiOAuthService extends AbstractOAuthService
      */
     public function getData($code, $redirectUrl)
     {
-        $rawData = $this->makeRequestAndJsonDecode('api.ok.ru', 'oauth/token.do', [], [
+        $rawData = $this->makeRequestAndJsonDecode('api.ok.ru', '/oauth/token.do', [], [
             'client_id' => $this->options['id'],
             'client_secret' => $this->options['secret'],
             'redirect_uri' => $redirectUrl,
@@ -72,7 +72,7 @@ class OdnoklassnikiOAuthService extends AbstractOAuthService
         $query['sig'] = $this->getSig($query, $data->accessToken);
         $query['access_token'] = $data->accessToken;
 
-        $rawData = $this->makeRequestAndJsonDecode('api.ok.ru', 'fb.do', $query);
+        $rawData = $this->makeRequestAndJsonDecode('api.ok.ru', '/fb.do', $query);
 
         $data->id = isset($rawData['uid']) ? $rawData['uid'] : null;
         $data->firstName = isset($rawData['first_name']) ? $rawData['first_name'] : null;

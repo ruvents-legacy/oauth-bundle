@@ -27,7 +27,7 @@ class FacebookOAuthService extends AbstractOAuthService
             ->createUri('')
             ->withScheme('https')
             ->withHost('www.facebook.com')
-            ->withPath($this->getPath('dialog/oauth'))
+            ->withPath($this->getPath('/dialog/oauth'))
             ->withQuery(http_build_query([
                 'client_id' => $this->options['id'],
                 'response_type' => 'code',
@@ -52,7 +52,7 @@ class FacebookOAuthService extends AbstractOAuthService
     public function getData($code, $redirectUrl)
     {
         $rawData = $this->makeRequestAndJsonDecode('graph.facebook.com',
-            $this->getPath('oauth/access_token'),
+            $this->getPath('/oauth/access_token'),
             [
                 'client_id' => $this->options['id'],
                 'client_secret' => $this->options['secret'],
@@ -65,7 +65,7 @@ class FacebookOAuthService extends AbstractOAuthService
         $data->accessToken = $rawData['access_token'];
 
         $rawData = $this->makeRequestAndJsonDecode('graph.facebook.com',
-            $this->getPath('me'),
+            $this->getPath('/me'),
             [
                 'fields' => implode(',', $this->options['fields']),
                 'access_token' => $data->accessToken,
@@ -128,6 +128,6 @@ class FacebookOAuthService extends AbstractOAuthService
      */
     private function getPath($endpoint)
     {
-        return 'v'.$this->options['graph_version'].'/'.$endpoint;
+        return '/v'.$this->options['graph_version'].$endpoint;
     }
 }
