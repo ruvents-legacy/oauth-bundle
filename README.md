@@ -1,1 +1,1 @@
-DEPRECATED, consider using use https://github.com/hwi/HWIOAuthBundle
+DEPRECATED, consider using https://github.com/hwi/HWIOAuthBundle
